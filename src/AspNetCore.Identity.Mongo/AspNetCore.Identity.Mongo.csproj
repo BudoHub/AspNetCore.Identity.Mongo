@@ -8,12 +8,20 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningsAsErrors>NU1605</WarningsAsErrors>
+    <NoWarn>1701;1702;IDE0003;CS1591;NU1803</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningsAsErrors>NU1605</WarningsAsErrors>
+    <NoWarn>1701;1702;IDE0003;CS1591</NoWarn>
+  </PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="MongoDB.Driver" Version="2.19.0" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(TargetFramework) != 'netstandard2.1'">
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	  <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.1.1" />
 	</ItemGroup>
 
 </Project>
