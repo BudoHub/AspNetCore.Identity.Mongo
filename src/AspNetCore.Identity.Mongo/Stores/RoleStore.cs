@@ -8,41 +8,34 @@ using System.Threading.Tasks;
 using AspNetCore.Identity.Mongo.Model;
 using AspNetCore.Identity.Mongo.Mongo;
 using Microsoft.AspNetCore.Identity;
-using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 namespace AspNetCore.Identity.Mongo.Stores
 {
-    /// <summary>
-    /// Creates a new instance of a persistence store for roles.
-    /// </summary>
-    /// <typeparam name="TRole">The type of the class representing a role</typeparam>
     public class RoleStore<TRole, TKey> :
         IRoleClaimStore<TRole>,
         IQueryableRoleStore<TRole>
         where TKey : IEquatable<TKey>
         where TRole : MongoRole<TKey>
     {
-        /// <summary>
-        /// Gets or sets the <see cref="IdentityErrorDescriber"/> for any error that occurred with the current operation.
-        /// </summary>
+
         public IdentityErrorDescriber ErrorDescriber { get; set; }
 
-        private readonly IMongoCollection<TRole> _collection;
+        private readonly IMongoCollection<TRole> collection;
+        private bool disposed;
 
-        private bool _disposed;
-
-        public RoleStore(IMongoCollection<TRole> collection, IdentityErrorDescriber describer)
+        public RoleStore(
+            IMongoCollection<TRole> collection,
+            IdentityErrorDescriber describer)
         {
-            _collection = collection;
+            this.collection = collection;
             ErrorDescriber = describer ?? new IdentityErrorDescriber();
         }
 
         /// <summary>
         /// A navigation property for the roles the store contains.
         /// </summary>
-        public IQueryable<TRole> Roles => _collection.AsQueryable();
+        public IQueryable<TRole> Roles => this.collection.AsQueryable();
 
         /// <summary>
         /// Creates a new role in a store as an asynchronous operation.
@@ -55,9 +48,12 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
-            await _collection.InsertOneAsync(role, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await this.collection.InsertOneAsync(role, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return IdentityResult.Success;
         }
@@ -73,12 +69,15 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
             var currentConcurrencyStamp = role.ConcurrencyStamp;
             role.ConcurrencyStamp = Guid.NewGuid().ToString();
 
-            var result = await _collection.ReplaceOneAsync(x => x.Id.Equals(role.Id) && x.ConcurrencyStamp.Equals(currentConcurrencyStamp), role, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var result = await this.collection.ReplaceOneAsync(x => x.Id.Equals(role.Id) && x.ConcurrencyStamp.Equals(currentConcurrencyStamp), role, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (!result.IsAcknowledged || result.ModifiedCount == 0)
             {
@@ -99,9 +98,12 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
-            var result = await _collection.DeleteOneAsync(x => x.Id.Equals(role.Id) && x.ConcurrencyStamp.Equals(role.ConcurrencyStamp), cancellationToken).ConfigureAwait(false);
+            var result = await this.collection.DeleteOneAsync(x => x.Id.Equals(role.Id) && x.ConcurrencyStamp.Equals(role.ConcurrencyStamp), cancellationToken).ConfigureAwait(false);
             if (!result.IsAcknowledged || result.DeletedCount == 0)
             {
                 return IdentityResult.Failed(ErrorDescriber.ConcurrencyFailure());
@@ -121,7 +123,10 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
             return Task.FromResult(ConvertIdToString(role.Id));
         }
@@ -137,7 +142,10 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
             return Task.FromResult(role.Name);
         }
@@ -154,7 +162,10 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
             role.Name = roleName;
 
@@ -172,7 +183,10 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
             return Task.FromResult(role.NormalizedName);
         }
@@ -189,7 +203,10 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
             role.NormalizedName = normalizedRoleName;
 
@@ -207,7 +224,7 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            return _collection.FirstOrDefaultAsync(x => x.Id.Equals(ConvertIdFromString(roleId)), cancellationToken: cancellationToken);
+            return this.collection.FirstOrDefaultAsync(x => x.Id.Equals(ConvertIdFromString(roleId)), cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -221,7 +238,7 @@ namespace AspNetCore.Identity.Mongo.Stores
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
 
-            return _collection.FirstOrDefaultAsync(x => x.NormalizedName == normalizedName, cancellationToken: cancellationToken);
+            return this.collection.FirstOrDefaultAsync(x => x.NormalizedName == normalizedName, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -234,9 +251,12 @@ namespace AspNetCore.Identity.Mongo.Stores
         {
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
 
-            var dbRole = await _collection.FirstOrDefaultAsync(x => x.Id.Equals(role.Id), cancellationToken: cancellationToken).ConfigureAwait(false);
+            var dbRole = await this.collection.FirstOrDefaultAsync(x => x.Id.Equals(role.Id), cancellationToken: cancellationToken).ConfigureAwait(false);
 
             return dbRole?.Claims.Select(e => new Claim(e.ClaimType, e.ClaimValue)).ToList() ?? new List<Claim>();
         }
@@ -252,8 +272,15 @@ namespace AspNetCore.Identity.Mongo.Stores
         {
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
+
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
 
             var identityRoleClaim = new IdentityRoleClaim<string>()
             {
@@ -263,7 +290,7 @@ namespace AspNetCore.Identity.Mongo.Stores
 
             role.Claims.Add(identityRoleClaim);
 
-            await _collection.UpdateOneAsync(x => x.Id.Equals(role.Id), Builders<TRole>.Update.Set(x => x.Claims, role.Claims), cancellationToken: cancellationToken).ConfigureAwait(false);
+            await this.collection.UpdateOneAsync(x => x.Id.Equals(role.Id), Builders<TRole>.Update.Set(x => x.Claims, role.Claims), cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -277,12 +304,19 @@ namespace AspNetCore.Identity.Mongo.Stores
         {
             ThrowIfDisposed();
 
-            if (role == null) throw new ArgumentNullException(nameof(role));
-            if (claim == null) throw new ArgumentNullException(nameof(claim));
+            if (role == null)
+            {
+                throw new ArgumentNullException(nameof(role));
+            }
+
+            if (claim == null)
+            {
+                throw new ArgumentNullException(nameof(claim));
+            }
 
             role.Claims.RemoveAll(x => x.ClaimType == claim.Type && x.ClaimValue == claim.Value);
 
-            return _collection.UpdateOneAsync(x => x.Id.Equals(role.Id), Builders<TRole>.Update.Set(x => x.Claims, role.Claims), cancellationToken: cancellationToken);
+            return this.collection.UpdateOneAsync(x => x.Id.Equals(role.Id), Builders<TRole>.Update.Set(x => x.Claims, role.Claims), cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -290,7 +324,7 @@ namespace AspNetCore.Identity.Mongo.Stores
         /// </summary>
         protected void ThrowIfDisposed()
         {
-            if (_disposed)
+            if (this.disposed)
             {
                 throw new ObjectDisposedException(GetType().Name);
             }
@@ -299,7 +333,7 @@ namespace AspNetCore.Identity.Mongo.Stores
         /// <summary>
         /// Dispose the stores
         /// </summary>
-        public void Dispose() => _disposed = true;
+        public void Dispose() => this.disposed = true;
 
         /// <summary>
         /// Converts the provided <paramref name="id"/> to a strongly typed key object.

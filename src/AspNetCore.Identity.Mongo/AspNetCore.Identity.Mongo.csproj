@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<TargetFrameworks>netstandard2.1;netcoreapp3.1;net5.0</TargetFrameworks>
+		<TargetFrameworks>net7.0</TargetFrameworks>
 		<ApplicationIcon />
 		<StartupObject />
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -26,7 +26,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MongoDB.Driver" Version="2.13.2" />
+		<PackageReference Include="MongoDB.Driver" Version="2.19.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework) != 'netstandard2.1'">
