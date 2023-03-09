@@ -1,0 +1,20 @@
+<Project>
+  <Import Project="version.props" />
+
+  <PropertyGroup Label="Source Link">
+    <ProjectParentDirectory>$([System.IO.Path]::GetDirectoryName('$(MSBuildProjectDirectory)'))</ProjectParentDirectory>
+    <ProjectParentDirectoryName>$([System.IO.Path]::GetFileName('$(ProjectParentDirectory)'))</ProjectParentDirectoryName>
+  </PropertyGroup>
+
+  <Import Project="sourcelink.props" Condition="'$(ProjectParentDirectoryName)' == 'src'" />
+
+  <PropertyGroup Label="Package">
+    <Description>BudoHub Shared Library for ASP.NET Core</Description>
+    <Copyright>Copyright © 2021, 2022 BudoHub</Copyright>
+    <Authors>BudoHub</Authors>
+    <PackageProjectUrl>https://github.com/ma-dev-global/BudoHub.Core</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/budo-hub/budohub-core</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>
